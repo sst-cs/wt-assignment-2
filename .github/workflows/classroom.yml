@@ -1,0 +1,32 @@
+name: Autograding
+
+on: [push]
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout student repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Checkout hidden tests
+        uses: actions/checkout@v5
+        with:
+          repository: sst-cs/wt-assignment-2-tests
+          token: ${{ secrets.HIDDEN_TESTS_TOKEN }}
+          path: grader
+
+      - name: Show downloaded files
+        run: ls -R grader
+
+      - name: Run tests
+        run: node grader/test.js
