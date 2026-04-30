@@ -6,7 +6,7 @@ Build a fully functional **Task Manager** application using HTML, CSS, and JavaS
 ## Required Structure
 
 ### HTML (`index.html`)
-Your page must include the following elements with **exact IDs and classes**:
+Your page must includE the following elements with **exact IDs and classes**:
 
 | Element | ID / Class | Description |
 |---|---|---|
