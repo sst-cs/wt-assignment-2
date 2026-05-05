@@ -46,7 +46,7 @@ jobs:
           echo "result=$B64" >> $GITHUB_OUTPUT
 
       - name: Autograding Reporter
-        uses: classroom-resources/autograding-reporter@v1
+        uses: classroom-resources/autograding-grading-reporter@v1
         env:
           GRADER_RESULTS: "${{steps.grader.outputs.result}}"
         with:
