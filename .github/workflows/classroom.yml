@@ -25,8 +25,29 @@ jobs:
           token: ${{ secrets.HIDDEN_TESTS_TOKEN }}
           path: grader
 
-      - name: Show downloaded files
-        run: ls -R grader
+      - name: Run tests and capture score
+        id: grader
+        run: |
+          node grader/test.js > test_output.txt 2>&1 || true
+          cat test_output.txt
+          
+          # Extract Raw Score
+          RAW_SCORE=$(grep -oP 'Raw Score: \K[0-9]+' test_output.txt || echo "0")
+          
+          # Scale to 10 points
+          SCORE=$(( (RAW_SCORE * 10) / 30 ))
+          
+          STATUS="pass"
+          if [ "$SCORE" -lt 5 ]; then STATUS="fail"; fi
+          
+          # Create JSON Payload for GitHub Classroom
+          JSON="{\"test_name\":\"Web Tech Tests\",\"status\":\"$STATUS\",\"max_score\":10,\"score\":$SCORE,\"output\":\"Detailed logs are available in the Actions tab.\"}"
+          B64=$(echo -n "$JSON" | base64 -w 0)
+          echo "result=$B64" >> $GITHUB_OUTPUT
 
-      - name: Run tests
-        run: node grader/test.js
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-reporter@v1
+        env:
+          GRADER_RESULTS: "${{steps.grader.outputs.result}}"
+        with:
+          runners: grader
