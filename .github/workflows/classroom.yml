@@ -36,16 +36,13 @@ jobs:
           node grader/test.js > test_output.txt 2>&1 || true
           cat test_output.txt
           
-          # Extract Raw Score
-          RAW_SCORE=$(grep -oP 'Raw Score: \K[0-9]+' test_output.txt || echo "0")
-          
-          # Scale to 10 points
-          SCORE=$(( (RAW_SCORE * 10) / 30 ))
+          # Extract Final Score (already scaled to 10 by test.js)
+          SCORE=$(grep -oP 'Final Score: \K[0-9]+' test_output.txt || echo "0")
           
           STATUS="pass"
           if [ "$SCORE" -lt 5 ]; then STATUS="fail"; fi
           
-          # Create JSON Payload for GitHub Classroom (including required 'tests' array to prevent reporter crash)
+          # Standardized JSON structure for GitHub Classroom Dashboard
           JSON="{\"test_name\":\"Web Tech Tests\",\"status\":\"$STATUS\",\"max_score\":10,\"score\":$SCORE,\"tests\":[{\"name\":\"Web Tech Tests\",\"status\":\"$STATUS\",\"score\":$SCORE,\"max_score\":10}],\"output\":\"Detailed logs are available in the Actions tab.\"}"
           B64=$(echo -n "$JSON" | base64 -w 0)
           echo "result=$B64" >> $GITHUB_OUTPUT
