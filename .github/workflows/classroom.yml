@@ -38,19 +38,20 @@ jobs:
           
           # Extract Final Score (already scaled to 10 by test.js)
           SCORE=$(grep -oP 'Final Score: \K[0-9]+' test_output.txt || echo "0")
+          echo "Final Score Extracted: $SCORE"
           
-          STATUS="pass"
-          if [ "$SCORE" -lt 5 ]; then STATUS="fail"; fi
-          
-          # Standardized JSON structure for GitHub Classroom Dashboard
-          JSON="{\"test_name\":\"Web Tech Tests\",\"status\":\"$STATUS\",\"max_score\":10,\"score\":$SCORE,\"tests\":[{\"name\":\"Web Tech Tests\",\"status\":\"$STATUS\",\"score\":$SCORE,\"max_score\":10}],\"output\":\"Detailed logs are available in the Actions tab.\"}"
-          B64=$(echo -n "$JSON" | base64 -w 0)
-          echo "result=$B64" >> $GITHUB_OUTPUT
+          # Generate 10 virtual runners to represent partial credit (1 point each)
+          for i in $(seq 1 10); do
+            STATUS="fail"
+            SCORE_VAL=0
+            if [ $i -le $SCORE ]; then STATUS="pass"; SCORE_VAL=1; fi
+            JSON="{\"version\":1,\"status\":\"$STATUS\",\"max_score\":1, \"tests\":[{\"name\":\"Requirement $i\",\"status\":\"$STATUS\",\"score\":$SCORE_VAL,\"max_score\":1}]}"
+            B64=$(echo -n "$JSON" | base64 -w 0)
+            echo "R${i}_RESULTS=$B64" >> $GITHUB_ENV
+          done
 
       - name: Autograding Reporter
         uses: education/autograding-grading-reporter@v1
         continue-on-error: true
-        env:
-          GRADER_RESULTS: "${{steps.grader.outputs.result}}"
         with:
-          runners: grader
+          runners: r1,r2,r3,r4,r5,r6,r7,r8,r9,r10
