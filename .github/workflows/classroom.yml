@@ -49,6 +49,7 @@ jobs:
 
       - name: Autograding Reporter
         uses: education/autograding-grading-reporter@v1
+        continue-on-error: true
         env:
           GRADER_RESULTS: "${{steps.grader.outputs.result}}"
         with:
